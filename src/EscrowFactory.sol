@@ -7,6 +7,7 @@ import {SimpleEscrow} from "../src/SimpleEscrow.sol";
 contract EscrowFactory {
     address feeRecipient;
     uint immutable feePercent;
+    mapping(address => address[])  escrowsPerDepositorMap;
 
     event EscrowCreated(address escrowAddress);
 
@@ -22,21 +23,22 @@ contract EscrowFactory {
         address _depositor,
         address _payee,
         uint _deadline,
-        unint _salt
+        uint _salt
     ) public payable {
         // This syntax is a newer way to invoke create2 without assembly, you just need to pass salt
         // https://docs.soliditylang.org/en/latest/control-structures.html#salted-contract-creations-create2
-        emit EscrowCreated(
-            address(
-                new SimpleEscrow{salt: bytes32(_salt)}(
-                    this,
-                    _depositor,
-                    _payee,
-                    _deadline,
-                    feePercent
-                )
+        address escrowDeploymenAddress = address(
+            new SimpleEscrow{salt: bytes32(_salt)}(
+                this,
+                _depositor,
+                _payee,
+                _deadline,
+                feePercent
             )
         );
+        // Updating escrowsPerDepositorMap
+        escrowsPerDepositorMap[_depositor].push(escrowDeploymenAddress);
+        emit EscrowCreated(escrowDeploymenAddress);
     }
 
     // F-3 Provide predictAddress(depositor, payee, salt) that returns the same CREATE2 address without deploying.
@@ -44,8 +46,8 @@ contract EscrowFactory {
         address _depositor,
         address _payee,
         uint _deadline,
-        unint _salt
-    ) public pure returns (address ) {
+        uint _salt
+    ) public view returns (address) {
         bytes memory bytecode = getBytecode(_depositor, _payee, _deadline);
         return getAddress(bytecode, _salt);
     }
@@ -56,7 +58,7 @@ contract EscrowFactory {
         address _depositor,
         address _payee,
         uint _deadline
-    ) private pure returns (bytes memory) {
+    ) private view returns (bytes memory) {
         bytes memory bytecode = type(SimpleEscrow).creationCode;
 
         return
@@ -83,5 +85,9 @@ contract EscrowFactory {
 
         // NOTE: cast last 20 bytes of hash to address
         return address(uint160(uint256(hash)));
+    }
+
+    function getEscrows(address _depositor) public view returns (address[] memory) {
+        return escrowsPerDepositorMap[_depositor];
     }
 }

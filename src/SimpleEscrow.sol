@@ -7,8 +7,10 @@ contract SimpleEscrow {
     address immutable payee;
     uint immutable deadline;
     uint immutable feePercent;
+    EscrowFactory immutable factory;
 
-    constructor(EscrowFactory _factory, address _depositor, address _payee, uint _deadline, uing _feePercent){
+    constructor(EscrowFactory _factory, address _depositor, address _payee, uint _deadline, uint _feePercent){
+        factory = _factory;
         depositor = _depositor;
         payee = _payee;
         deadline = _deadline;
