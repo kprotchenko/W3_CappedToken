@@ -10,10 +10,20 @@ contract EscrowFactoryScript is Script {
     function setUp() public {}
 
     function run() public {
-        vm.startBroadcast();
+        uint256 pk;
+        address feeRecipient;
+        if (block.chainid == 31337) {
+            pk = uint256(vm.envBytes32("PK_FOR_ANVIL"));
+            feeRecipient = vm.envAddress("FEE_RECIPIENT_ADDR_ANVIL");
+        } else if (block.chainid == 11155111) {
+            pk = uint256(vm.envBytes32("PK_FOR_SEPOLIA"));
+            feeRecipient = vm.envAddress("FEE_RECIPIENT_ADDR_SEPOLIA");
+        } else {
+            revert("unsupported chain");
+        }
 
-        factory = new EscrowFactory(0xa0Ee7A142d267C1f36714E4a8F75612F20a79720);
-
+        vm.startBroadcast(pk);
+        factory = new EscrowFactory(feeRecipient);
         vm.stopBroadcast();
     }
 }
