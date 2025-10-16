@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.30;
 import {EscrowFactory} from "../src/EscrowFactory.sol";
-import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+// import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 contract SimpleEscrow {
     event Funded(uint256 amount);
     event Released(address payee, uint256 amount);
@@ -31,11 +31,15 @@ contract SimpleEscrow {
         emit Funded(msg.value);
     }
 
-    function hashRelease() private pure returns (bytes32) {
-        bytes32 messageHash = keccak256(abi.encodePacked("RELEASE" ));
+    function hashRelease(uint256 amount) public view returns (bytes32) {
+        bytes32 messageHash = keccak256(abi.encodePacked("RELEASE", address(this), amount));
+        //Todo: find out why the video tells me to do this additional part
+        return messageHash;
+    }
+
+    function ethHashRelease(bytes32 messageHash) private pure returns (bytes32) {
         //Todo: find out why the video tells me to do this additional part
         return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32",messageHash));
-        
     }
 
     function _split(bytes memory _sig) internal pure returns (bytes32 r, bytes32 s, uint8 v){
@@ -52,17 +56,26 @@ contract SimpleEscrow {
         return ecrecover(msgSigned, v, r, s);
     }
 
-    function verify(bytes memory _sig) private view returns (bool){
-        return recover(hashRelease(), _sig) == depositor;
+    function verify(uint256 amount, bytes memory _sig) private view returns (bool){
+        // (address recovered, ECDSA.RecoverError err, bytes32 errArg) = ECDSA.tryRecover(hashRelease(amount), _sig);
+        // require(err == ECDSA.RecoverError.NoError, "Something did not work during recovery attempt.");
+        bytes32 signedMessage = ethHashRelease(hashRelease(amount));
+        address recovered = recover(signedMessage, _sig);
+        return recovered == depositor;
     }
 
     // E-3 release(amount, sig) sends (amount – fee) to payee if sig recovers depositor from keccak256(“RELEASE”, address(this), amount). Forward the fee to the factory, emit Released(payee, amountAfterFee).
-    // Todo: still work in progress
+    // Todo: still work in progress, need to finish deadline calculations
     function release(uint256 amount, bytes memory _sig) public {
-        require(fundedAlready, "The contruct is not dunded yet");
-        uint256 amountAfterFee = amount - (amount*feePercent)/100;
-        bool isSignedByDepositor = verify(_sig);
+        require(fundedAlready, "The contruct is not funded yet");
+        uint256 fee = (amount*feePercent)/100;
+        uint256 amountAfterFee = amount - fee;
+        bool isSignedByDepositor = verify(amount, _sig);
         require(isSignedByDepositor, "Signature is invalid");
+        (bool success_for_payee, ) = payee.call{value: amountAfterFee}("");
+        require(success_for_payee, "payee did not get the funds");
+        (bool success_for_factory, ) = address(factory).call{value: fee}("");
+        require(success_for_factory, "factory did not get the funds");
         emit Released(payee, amountAfterFee);
     }
 }

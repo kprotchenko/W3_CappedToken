@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.20;
 // import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/utils/Create2.sol";
+// import "@openzeppelin/contracts/utils/Create2.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import {SimpleEscrow} from "../src/SimpleEscrow.sol";
 
@@ -95,8 +95,8 @@ contract EscrowFactory is Ownable {
     }
 
 
-    // F-5 Owner can pause() and unpause() deployments (use Pausable). ?????????????????????
-    // Todo: F-5 Owner can pause() and unpause() deployments (use Pausable). ?????????????????????
+    // F-5 Owner can pause() and unpause() deployments (use Pausable).
+    // Todo: F-5 Owner can pause() and unpause() deployments (use Pausable). Still the work in progress
 
     // F-6 withdrawFees() lets owner pull accumulated fees to feeRecipient.
     function withdrawFees() external onlyOwner {
