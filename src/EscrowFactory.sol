@@ -6,23 +6,25 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import {SimpleEscrow} from "../src/SimpleEscrow.sol";
 
 contract EscrowFactory is Ownable {
-    address feeRecipient;
+    address payable public feeRecipient;
     uint immutable feePercent;
     mapping(address => address[]) escrowsPerDepositorMap;
 
     event EscrowCreated(address escrowAddress);
 
     // F-1 Constructor stores feeRecipient and sets immutable feePercent = 1 (units: percent).
-    constructor(address _feeRecipient) Ownable(msg.sender) {
+    constructor(address payable _feeRecipient) Ownable(msg.sender) {
+        require(_feeRecipient != address(0));
         feeRecipient = _feeRecipient;
         feePercent = 1;
     }
+    function setFeeRecipient(address payable r) external onlyOwner { require(r != address(0)); feeRecipient = r; }
 
     // Returns the address of the newly deployed contract
     // F-2 deploys a new SimpleEscrow with CREATE2 and emits EscrowCreated(escrowAddress).
     function createEscrow(
         address _depositor,
-        address _payee,
+        address payable _payee,
         uint _deadline,
         uint256 _salt
     ) public {
@@ -103,10 +105,4 @@ contract EscrowFactory is Ownable {
         (bool success, ) = feeRecipient.call{value: address(this).balance}("");
         require(success, "withdraw failed");
     }
-
-    // function withdrowAmount(address payable to, uint256 amount) external onlyOwner {
-    //     require(address(this).balance >= amount,"Not enough balance");
-    //     (bool success, ) = to.call{value: amount}("");
-    //     require(success, "withdraw failed");
-    // }
 }

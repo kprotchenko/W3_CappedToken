@@ -11,13 +11,13 @@ contract EscrowFactoryScript is Script {
 
     function run() public {
         uint256 pk;
-        address feeRecipient;
+        address payable feeRecipient;
         if (block.chainid == 31337) {
             pk = uint256(vm.envBytes32("PK_FOR_ANVIL"));
-            feeRecipient = vm.envAddress("FEE_RECIPIENT_ADDR_ANVIL");
+            feeRecipient = payable(vm.envAddress("FEE_RECIPIENT_ADDR_ANVIL"));
         } else if (block.chainid == 11155111) {
             pk = uint256(vm.envBytes32("PK_FOR_SEPOLIA"));
-            feeRecipient = vm.envAddress("FEE_RECIPIENT_ADDR_SEPOLIA");
+            feeRecipient = payable(vm.envAddress("FEE_RECIPIENT_ADDR_SEPOLIA"));
         } else {
             revert("unsupported chain");
         }
