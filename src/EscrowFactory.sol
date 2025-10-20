@@ -3,9 +3,11 @@ pragma solidity ^0.8.20;
 // import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 // import "@openzeppelin/contracts/utils/Create2.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {SimpleEscrow} from "../src/SimpleEscrow.sol";
 
-contract EscrowFactory is Ownable {
+contract EscrowFactory is Ownable, ReentrancyGuard, Pausable {
     address payable public feeRecipient;
     uint immutable feePercent;
     mapping(address => address[]) escrowsPerDepositorMap;
@@ -18,7 +20,7 @@ contract EscrowFactory is Ownable {
         feeRecipient = _feeRecipient;
         feePercent = 1;
     }
-    function setFeeRecipient(address payable r) external onlyOwner { require(r != address(0)); feeRecipient = r; }
+    // function setFeeRecipient(address payable r) external onlyOwner { require(r != address(0)); feeRecipient = r; }
 
     // Returns the address of the newly deployed contract
     // F-2 deploys a new SimpleEscrow with CREATE2 and emits EscrowCreated(escrowAddress).
@@ -27,7 +29,7 @@ contract EscrowFactory is Ownable {
         address payable _payee,
         uint _deadline,
         uint256 _salt
-    ) public returns (address) {
+    ) public whenNotPaused returns (address) {
         // This syntax is a newer way to invoke create2 without assembly, you just need to pass salt
         // https://docs.soliditylang.org/en/latest/control-structures.html#salted-contract-creations-create2
         address escrowDeploymenAddress = address(
@@ -100,6 +102,12 @@ contract EscrowFactory is Ownable {
 
     // F-5 Owner can pause() and unpause() deployments (use Pausable).
     // Todo: F-5 Owner can pause() and unpause() deployments (use Pausable). Still the work in progress
+    function pause() external {
+        _pause();
+    }
+    function unpause() external {
+        _unpause();
+    }
 
     // F-6 withdrawFees() lets owner pull accumulated fees to feeRecipient.
     function withdrawFees() external onlyOwner {
