@@ -42,6 +42,7 @@ _deps/
 .wake/
 .wake_cache/
 lib/
+bin/
 .DS_Store
 
 # --- Optional / tool-specific ---
@@ -63,4 +64,3 @@ Icon?
 .Spotlight-V100
 .Trashes
 .fseventsd
-lib/
