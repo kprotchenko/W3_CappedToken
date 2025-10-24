@@ -45,6 +45,9 @@ contract RewardsVault is AccessControl, Pausable, ReentrancyGuard {
     }
 
     // Todo: RV-7: setFoundationWallet(address) — onlyRole(DEFAULT_ADMIN_ROLE); reverts on zero address.
+    function setFoundationWallet(address _foundationWallet) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        // Todo: need to finish the work on setFoundationWallet(...) function
+    }
 
     // RV-8: pause() / unpause() — onlyRole(PAUSER_ROLE) (or AUDITOR_ROLE).
     function pause() external onlyRole(PAUSER_ROLE) onlyRole(AUDITOR_ROLE) {
