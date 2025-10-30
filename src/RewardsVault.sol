@@ -42,8 +42,11 @@ contract RewardsVault is AccessControl, Pausable, ReentrancyGuard {
     }
 
     // RV-6: withdraw(uint256 amount) — onlyRole(TREASURER_ROLE) nonReentrant; sends ETH to foundationWallet; emits Withdrawal(amount).
+    error NotEnoughBalanceForWithdrowallAmount();
+
     function withdraw(uint256 amount) external onlyRole(TREASURER_ROLE) nonReentrant {
-        (bool success_for_withdraw,) = foundationWallet.call{value: address(this).balance}("");
+        require(amount <= address(this).balance, "low balance");
+        (bool success_for_withdraw,) = foundationWallet.call{value: amount}("");
         require(success_for_withdraw, "withdraw transfer failed");
         emit Withdrawal(amount);
     }

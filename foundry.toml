@@ -3,11 +3,7 @@
 src  = "src"
 out  = "out"
 libs = ["lib"]                      # drop node_modules if you won't use it
-remappings = [
-  "@openzeppelin/=lib/openzeppelin-contracts/",
-  "forge-std/=lib/forge-std/src/",
-]
-
+solc = "0.8.30"
 
 [rpc_endpoints]
 anvil   = "http://127.0.0.1:8545"

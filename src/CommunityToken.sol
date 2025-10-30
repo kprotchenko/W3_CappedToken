@@ -41,11 +41,16 @@ contract CommunityToken is ERC20, ERC20Pausable, AccessControl {
         _unpause();
     }
 
+    event RewardsVaultCreated(address indexed vault, address indexed admin, address indexed foundation);
+
     function createRewardsVault(address admin, address payable _foundationWallet)
         external
         onlyRole(DEFAULT_ADMIN_ROLE)
+        returns (address)
     {
         address _rewardsVaultDeploymentAddress = address(new RewardsVault(this, admin, _foundationWallet));
         grantRole(MINTER_ROLE, _rewardsVaultDeploymentAddress);
+        emit RewardsVaultCreated(_rewardsVaultDeploymentAddress, admin, _foundationWallet);
+        return _rewardsVaultDeploymentAddress;
     }
 }
