@@ -1,7 +1,8 @@
 # solidity-sol71-Kyrylo
 
 # Module 3: Role-Based Rewards Pool
-You will create a two-contract system that turns Ether donations into reward tokens and secures every action with OpenZeppelin AccessControl
+You will create a two-contract system that turns Ether donations into reward tokens and secures every action with OpenZeppelin AccessControl.
+https://app.metana.io/lessons/%f0%9f%93%91-assignments-m3-5/
 
 *****************************************************************************************************
 ```
@@ -13,7 +14,7 @@ forge install OpenZeppelin/openzeppelin-contracts@v5.4.0 --no-git
 *****************************************************************************************************
 ```
 # Following variables need to be defined in .env file locally to run script/CommunityToken.s.sol
-# I provided examples values from Anvil but you are welcome to change them).
+# I provided examples values from Anvil but you are welcome to change them.
 
 
 PK_FOR_ANVIL=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
