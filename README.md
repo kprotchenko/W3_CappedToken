@@ -4,6 +4,40 @@
 You will create a two-contract system that turns Ether donations into reward tokens and secures every action with OpenZeppelin AccessControl.
 https://app.metana.io/lessons/%f0%9f%93%91-assignments-m3-5/
 
+# Module 3 Assignment – Donation Contract & Unit Tests
+
+## Function Requirements
+
+- **`withdraw(uint256 amount)`**
+    - Must be restricted to `onlyRole(TREASURER_ROLE)` and use `nonReentrant`.
+    - Should send ETH to the `foundationWallet` using a low‑level call.
+    - Must emit a `Withdrawal(amount)` event.
+
+- **`setFoundationWallet(address newWallet)`**
+    - Accessible only by `DEFAULT_ADMIN_ROLE`.
+    - Should revert if the provided address is the zero address.
+
+- **`pause()` / `unpause()`**
+    - Only `PAUSER_ROLE` (or `AUDITOR_ROLE`) can call these functions.
+
+- **`receive()` and fallback function**
+    - Both should revert to prevent accidental transfers.
+
+- **Gas‑efficiency**
+    - Use a low‑level call for ETH transfers and custom errors to save gas.
+
+## Unit‑Testing Requirements
+
+- Use **Hardhat** or **Foundry** for writing tests.
+- Provide at least **three tests**:
+    - Verify that `donate` mints the correct token amount and emits a **`Donation`** event.
+    - Ensure `withdraw` works for `TREASURER_ROLE` and reverts for other roles.
+    - Confirm that when `pause()` is active, both `donate` and `withdraw` revert.
+
+- You may add additional tests, such as:
+    - Testing the pause/unpause cycle.
+    - Burn scenarios or other edge cases.
+
 *****************************************************************************************************
 ```
 # Folowing dependencies are needed for project to be deployed locally. 
