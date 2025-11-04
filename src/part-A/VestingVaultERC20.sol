@@ -25,7 +25,11 @@ contract VestingVault is ReentrancyGuard, AccessControl {
     }
 
     // Todo: A-3: createSchedule(address beneficiary, uint64 cliff, uint64 duration, uint256 amount) – only admin;
-    // stores schedule struct (mapping by ID).
+    // A-3: stores schedule struct (mapping by ID).
+    function createSchedule(address beneficiary, uint64 cliff, uint64 duration, uint256 amount)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    { }
     // Todo: A-4: claim(uint scheduleId) – beneficiary pulls tokens vested up to block.timestamp. Uses pull over push
     // pattern, emits Claimed.
     // Todo: A-5: Uses custom errors, immutable variables, and unchecked blocks (where safe) for gas savings.
