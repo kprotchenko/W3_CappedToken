@@ -46,13 +46,14 @@ contract VestingVault is ReentrancyGuard, AccessControl {
     // Todo: A-3: createSchedule(address beneficiary, uint64 cliff, uint64 duration, uint256 amount) – only admin;
     // A-3: stores schedule struct (mapping by ID).
     // I added nonReentrant just inn case so as to eliminate scenario where admin
+    error CliffMustBeInThePastOrNowToCreateNew();
     function createSchedule(address beneficiary, uint64 cliff, uint64 duration, uint256 amountVested)
         external
         nonReentrant
         onlyRole(DEFAULT_ADMIN_ROLE)
         returns (uint256)
     {
-        require(cliff >= block.timestamp, "Cliff must be in the future or now");
+        require(cliff >= block.timestamp, CliffMustBeInThePastOrNowToCreateNew());
         uint256 scheduleId;
         unchecked {
             scheduleId = ++_nextScheduleId;
@@ -68,12 +69,15 @@ contract VestingVault is ReentrancyGuard, AccessControl {
 
     // Todo: A-4: claim(uint scheduleId) – beneficiary pulls tokens vested up to block.timestamp. Uses pull over push
     // pattern, emits Claimed.
+    error OnlyBeneficiaryCanClaim();
+    error CliffMustBeInThePastOrNowToClaim();
+    error TheFundsAlreadyReleased();
     function claim(uint256 scheduleId) external nonReentrant {
         VestingSchedule schedule = vestingSchedules[scheduleId];
         // Checks
-        require(schedule.beneficiary == msg.sender, "Only beneficiary can claim");
-        require(schedule.cliff <= block.timestamp, "Cliff must be in the past or now");
-        require(schedule.releasedAmount < schedule.amountVested, "All the funds are already released");
+        require(schedule.beneficiary == msg.sender,  OnlyBeneficiaryCanClaim());
+        require(schedule.cliff <= block.timestamp, CliffMustBeInThePastOrNowToClaim());
+        require(schedule.releasedAmount < schedule.amountVested, TheFundsAlreadyReleased());
         // Effects
         uint64 timePassed;
         uint64 endDate;
