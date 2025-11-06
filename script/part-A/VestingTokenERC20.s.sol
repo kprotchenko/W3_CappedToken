@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.30;
 
-import "forge-std/Script.sol";
+import { Script } from "forge-std/Script.sol";
 import "../../src/part-A/VestingTokenERC20.sol";
 //import {Script} from "forge-std/Script.sol";
 //import {VestingToken} from  "./VestingTokenERC20.sol";
@@ -26,7 +26,7 @@ contract VestingTokenScript is Script {
         } else {
             revert("unsupported chain");
         }
-        vm.startBroadcast(pk);
+        vm.startBroadcast();
         vaultFactory = new VestingToken("VestingToken1", "VT1", tokenAdmin);
         vm.stopBroadcast();
     }

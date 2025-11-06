@@ -35,7 +35,7 @@ contract VestingVault is ReentrancyGuard, AccessControl {
         uint256 scheduleId, address beneficiary, uint64 cliff, uint64 duration, uint256 amountVested
     );
 
-    event Claimed(address beneficiary, uint64 cliff, uint64 duration, uint256 amountVested, uint256 amountClaimed);
+    event Claimed(uint256 scheduleId, address beneficiary, uint64 cliff, uint64 duration, uint256 amountVested, uint256 amountClaimed);
 
     // A-2.2: Constructor takes token address and admin.
     constructor(address token, address admin) {
@@ -43,9 +43,9 @@ contract VestingVault is ReentrancyGuard, AccessControl {
         vestingToken = VestingToken(token);
     }
 
-    // Todo: A-3: createSchedule(address beneficiary, uint64 cliff, uint64 duration, uint256 amount) – only admin;
+    // A-3: createSchedule(address beneficiary, uint64 cliff, uint64 duration, uint256 amount) – only admin;
     // A-3: stores schedule struct (mapping by ID).
-    // I added nonReentrant just inn case so as to eliminate scenario where admin
+    // I added nonReentrant just in case to prevent bugs associated with accidental reentry.
     error CliffMustBeInThePastOrNowToCreateNew();
 
     function createSchedule(address beneficiary, uint64 cliff, uint64 duration, uint256 amountVested)
@@ -75,39 +75,39 @@ contract VestingVault is ReentrancyGuard, AccessControl {
     error TheFundsAlreadyReleased();
 
     function claim(uint256 scheduleId) external nonReentrant {
-        VestingSchedule schedule = vestingSchedules[scheduleId];
+//        VestingSchedule schedule = vestingSchedules[scheduleId];
         // Checks
-        require(schedule.beneficiary == msg.sender, OnlyBeneficiaryCanClaim());
-        require(schedule.cliff <= block.timestamp, CliffMustBeInThePastOrNowToClaim());
-        require(schedule.releasedAmount < schedule.amountVested, TheFundsAlreadyReleased());
+        require(vestingSchedules[scheduleId].beneficiary == msg.sender, OnlyBeneficiaryCanClaim());
+        require(vestingSchedules[scheduleId].cliff <= block.timestamp, CliffMustBeInThePastOrNowToClaim());
+        require(vestingSchedules[scheduleId].releasedAmount < vestingSchedules[scheduleId].amountVested, TheFundsAlreadyReleased());
         // Effects
         uint64 timePassed;
         uint64 endDate;
         unchecked {
-            endDate = schedule.cliff + schedule.duration;
-            if (endDate > block.timestamp) {
-                timePassed = block.timestamp - schedule.cliff;
+            endDate = vestingSchedules[scheduleId].cliff + vestingSchedules[scheduleId].duration;
+            if (endDate > uint64(block.timestamp)) {
+                timePassed = uint64(block.timestamp) - vestingSchedules[scheduleId].cliff;
             } else {
-                timePassed = schedule.duration;
+                timePassed = vestingSchedules[scheduleId].duration;
             }
         }
         uint256 releasedAmountNew;
-        if (endDate > block.timestamp) {
-            releasedAmountNew = timePassed * schedule.amountVested / schedule.duration;
+        if (endDate > uint64(block.timestamp)) {
+            releasedAmountNew = timePassed * vestingSchedules[scheduleId].amountVested / vestingSchedules[scheduleId].duration;
         } else {
-            releasedAmountNew = schedule.amountVested;
+            releasedAmountNew = vestingSchedules[scheduleId].amountVested;
         }
         uint256 amountClaimed;
         unchecked {
-            amountClaimed = releasedAmountNew - schedule.releasedAmount;
+            amountClaimed = releasedAmountNew - vestingSchedules[scheduleId].releasedAmount;
         }
 
         // Interactions
-        schedule.releasedAmount = releasedAmountNew;
+        vestingSchedules[scheduleId].releasedAmount = releasedAmountNew;
         vestingToken.mint(msg.sender, amountClaimed);
 
         emit Claimed(
-            scheduleId, schedule.beneficiary, schedule.cliff, schedule.duration, schedule.amountVested, amountClaimed
+            scheduleId, vestingSchedules[scheduleId].beneficiary, vestingSchedules[scheduleId].cliff, vestingSchedules[scheduleId].duration, vestingSchedules[scheduleId].amountVested, amountClaimed
         );
     }
 

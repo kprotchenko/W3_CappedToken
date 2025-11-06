@@ -12,4 +12,10 @@ contract VestingVaultTest is Test {
     function setUp() public {
         // Todo: Schedule releases correct amounts over time (use warp) Non-admin cannot create schedules
     }
+
+    function testCreateSchedule() public {
+
+    }
+
+    function testClaim() public { }
 }
