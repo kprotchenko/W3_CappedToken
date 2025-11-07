@@ -23,10 +23,16 @@ contract MetaverseItem is ERC721, ERC721Royalty, ERC721Enumerable, AccessControl
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
     }
 
+    // B-2.1: Setter is needed since default royalty value is set inside the constructor (rather then being declared as a constant)
+    function setRoyalty(uint96 memory _royalty) external onlyRole(DEFAULT_ADMIN_ROLE){
+        royalty = _royalty;
+    }
+
     // B-3: mint(address to) – only minter; tokenId auto-increments; max supply = 10 000.
     function mint(address to) external onlyRole(MINTER_ROLE) {
         require(totalSupply() < MAX_SUPPLY, "Max supply reached");
         _safeMint(to, ++_nextTokenId);
+        //_feeDenominator default value is matching MAX_SUPPLY so there is no need to override
         _setTokenRoyalty(_nextTokenId, msg.sender, royalty);
     }
 
