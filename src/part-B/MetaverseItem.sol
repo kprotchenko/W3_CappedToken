@@ -15,8 +15,6 @@ contract MetaverseItem is ERC721, ERC721Royalty, ERC721Enumerable, AccessControl
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     string public immutable baseURI;
 
-
-
     // B-2: Constructor (name, symbol, baseURI, admin) sets default 5 % royalty and grants MINTER_ROLE to admin.
     constructor(string memory name_, string memory symbol_, string memory _baseURI, address _admin) ERC721(name_, symbol_) {
         baseURI = _baseURI;
