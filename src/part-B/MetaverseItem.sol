@@ -13,7 +13,7 @@ contract MetaverseItem is ERC721, ERC721Royalty, ERC721Enumerable, AccessControl
     uint16 public constant MAX_SUPPLY = 10_000;
     uint256 private _nextTokenId;
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-    string public immutable baseURI;
+    string public baseURI;
 
     // B-2: Constructor (name, symbol, baseURI, admin) sets default 5 % royalty and grants MINTER_ROLE to admin.
     constructor(string memory name_, string memory symbol_, string memory _baseURI, address _admin)
@@ -40,6 +40,7 @@ contract MetaverseItem is ERC721, ERC721Royalty, ERC721Enumerable, AccessControl
     }
 
     // B-4: setBaseURI(string) – only admin; stores IPFS base (e.g., ipfs://CID/).
+    // Todo: Changing base URI is not a good idea as it would break tokenURI(uint256 tokenId) function
     function setBaseURI(string memory _baseURI) external onlyRole(DEFAULT_ADMIN_ROLE) {
         baseURI = _baseURI;
     }
@@ -50,6 +51,7 @@ contract MetaverseItem is ERC721, ERC721Royalty, ERC721Enumerable, AccessControl
     }
 
     // B-5.2: tokenURI = baseURI + tokenId + “.json”.
+    // Todo: Changing base URI is not a good idea as doing so would break this method
     function tokenURI(uint256 tokenId) public view override(ERC721) returns (string memory) {
         _requireOwned(tokenId);
         string memory baseURI = _baseURI();
