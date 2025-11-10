@@ -16,15 +16,18 @@ contract MetaverseItem is ERC721, ERC721Royalty, ERC721Enumerable, AccessControl
     string public immutable baseURI;
 
     // B-2: Constructor (name, symbol, baseURI, admin) sets default 5 % royalty and grants MINTER_ROLE to admin.
-    constructor(string memory name_, string memory symbol_, string memory _baseURI, address _admin) ERC721(name_, symbol_) {
+    constructor(string memory name_, string memory symbol_, string memory _baseURI, address _admin)
+        ERC721(name_, symbol_)
+    {
         baseURI = _baseURI;
         admin = _admin;
         royalty = 500;
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
     }
 
-    // B-2.1: Setter is needed since default royalty value is set inside the constructor (rather then being declared as a constant)
-    function setRoyalty(uint96 memory _royalty) external onlyRole(DEFAULT_ADMIN_ROLE){
+    // B-2.1: Setter is needed since default royalty value is set inside the constructor (rather then being declared as
+    // a constant)
+    function setRoyalty(uint96 memory _royalty) external onlyRole(DEFAULT_ADMIN_ROLE) {
         royalty = _royalty;
     }
 
@@ -37,22 +40,21 @@ contract MetaverseItem is ERC721, ERC721Royalty, ERC721Enumerable, AccessControl
     }
 
     // B-4: setBaseURI(string) – only admin; stores IPFS base (e.g., ipfs://CID/).
-    function setBaseURI(string memory _baseURI) external onlyRole(DEFAULT_ADMIN_ROLE){
+    function setBaseURI(string memory _baseURI) external onlyRole(DEFAULT_ADMIN_ROLE) {
         baseURI = _baseURI;
     }
 
     // B-5.1: Override _baseURI();.
-    function _baseURI() internal override(ERC721) view returns (string memory) {
+    function _baseURI() internal view override(ERC721) returns (string memory) {
         return baseURI;
     }
 
     // B-5.2: tokenURI = baseURI + tokenId + “.json”.
-    function tokenURI(uint256 tokenId) public override(ERC721) view returns (string memory) {
+    function tokenURI(uint256 tokenId) public view override(ERC721) returns (string memory) {
         _requireOwned(tokenId);
         string memory baseURI = _baseURI();
         return bytes(baseURI).length > 0 ? string.concat(baseURI, tokenId.toString(), ".json") : "";
     }
-
 
     function _increaseBalance(address account, uint128 amount) internal override(ERC721, ERC721Enumerable) {
         super._increaseBalance(account, amount);

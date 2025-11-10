@@ -21,7 +21,6 @@ contract VestingVaultTest is Test {
     uint256 public amountVested;
     uint256 public amountClaimed;
 
-
     event VestingScheduleCreated(
         uint256 scheduleId, address beneficiary, uint64 cliff, uint64 duration, uint256 amountVested
     );
@@ -35,7 +34,6 @@ contract VestingVaultTest is Test {
     );
 
     function setUp() public {
-
         vm.txGasPrice(0); // exact balance math
         tokenAdmin = payable(address(vm.envAddress("TOKEN_ADMIN")));
         vaultAdmin = payable(address(vm.envAddress("VAULT_ADMIN")));
