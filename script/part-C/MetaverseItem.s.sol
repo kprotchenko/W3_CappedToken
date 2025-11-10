@@ -12,6 +12,7 @@ contract MetaverseItemScript is Script {
     function run() public {
         uint256 pk;
         address admin;
+        string memory baseURI = vm.envString("BASE_URI");
         if (block.chainid == 31_337) {
             pk = uint256(vm.envBytes32("PK_FOR_ANVIL"));
             admin = vm.envAddress("ITEM_ADMIN");
@@ -24,7 +25,7 @@ contract MetaverseItemScript is Script {
             revert("unsupported chain");
         }
         vm.startBroadcast(pk);
-        item = new MetaverseItem("MetaverseItem1", "MI1", admin);
+        item = new MetaverseItem("MetaverseItem1", "MI1", baseURI, admin);
         vm.stopBroadcast();
     }
 }

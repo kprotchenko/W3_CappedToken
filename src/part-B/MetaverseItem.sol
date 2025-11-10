@@ -5,6 +5,9 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Royalty.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+
+using Strings for uint256;
 
 // B-1: MetaverseItem inherits ERC721, ERC721Royalty, ERC721Enumerable, AccessControl.
 contract MetaverseItem is ERC721, ERC721Royalty, ERC721Enumerable, AccessControl {
@@ -14,6 +17,8 @@ contract MetaverseItem is ERC721, ERC721Royalty, ERC721Enumerable, AccessControl
     uint256 private _nextTokenId;
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     string public baseURI;
+
+    event MintedMetaverseItemNFT(uint256 tokenId, string tokenURI, address creator, address to);
 
     // B-2: Constructor (name, symbol, baseURI, admin) sets default 5 % royalty and grants MINTER_ROLE to admin.
     constructor(string memory name_, string memory symbol_, string memory _baseURI, address _admin)
@@ -27,7 +32,7 @@ contract MetaverseItem is ERC721, ERC721Royalty, ERC721Enumerable, AccessControl
 
     // B-2.1: Setter is needed since default royalty value is set inside the constructor (rather then being declared as
     // a constant)
-    function setRoyalty(uint96 memory _royalty) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setRoyalty(uint96 _royalty) external onlyRole(DEFAULT_ADMIN_ROLE) {
         royalty = _royalty;
     }
 
@@ -35,8 +40,9 @@ contract MetaverseItem is ERC721, ERC721Royalty, ERC721Enumerable, AccessControl
     function mint(address to) external onlyRole(MINTER_ROLE) {
         require(totalSupply() < MAX_SUPPLY, "Max supply reached");
         _safeMint(to, ++_nextTokenId);
-        //_feeDenominator default value is matching MAX_SUPPLY so there is no need to override
+        //_feeDenominator default value is matching MAX_SUPPLY of 10_000 so there is no need to specify
         _setTokenRoyalty(_nextTokenId, msg.sender, royalty);
+        emit MintedMetaverseItemNFT(_nextTokenId, tokenURI(_nextTokenId), msg.sender, to);
     }
 
     // B-4: setBaseURI(string) – only admin; stores IPFS base (e.g., ipfs://CID/).
