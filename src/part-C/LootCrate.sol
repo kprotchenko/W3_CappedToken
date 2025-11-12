@@ -38,7 +38,7 @@ contract LootCrate is ERC1155, Pausable, AccessControl {
     //    // Price: 0.02 ETH each.
     error WrongAmountWasPayed(uint256 price, uint256 count, uint256 expected, uint256 got);
 
-    function openCrate(uint256 count) external payable {
+    function openCrate(uint256 count) external payable whenNotPaused{
         // Every crate should have up to 100 items among which 95 would be assortment of swords and shields and the rest
         // would be NFTs
         uint256 expected = price * count;
