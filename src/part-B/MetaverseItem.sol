@@ -21,10 +21,10 @@ contract MetaverseItem is ERC721, ERC721Royalty, ERC721Enumerable, AccessControl
     event MintedMetaverseItemNFT(uint256 tokenId, string tokenURI, address creator, address to);
 
     // B-2: Constructor (name, symbol, baseURI, admin) sets default 5 % royalty and grants MINTER_ROLE to admin.
-    constructor(string memory name_, string memory symbol_, string memory _baseURI, address _admin)
+    constructor(string memory name_, string memory symbol_, string memory uri, address _admin)
         ERC721(name_, symbol_)
     {
-        baseURI = _baseURI;
+        baseURI = uri;
         admin = _admin;
         royalty = 500;
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
@@ -48,8 +48,8 @@ contract MetaverseItem is ERC721, ERC721Royalty, ERC721Enumerable, AccessControl
     // B-4: setBaseURI(string) – only admin; stores IPFS base (e.g., ipfs://CID/).
     // Todo: Changing base URI is not a good idea as it would break tokenURI(uint256 tokenId) function (unless all the
     // data is migrated to the new URI)
-    function setBaseURI(string memory _baseURI) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        baseURI = _baseURI;
+    function setBaseURI(string memory uri) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        baseURI = uri;
     }
 
     // B-5.1: Override _baseURI();.

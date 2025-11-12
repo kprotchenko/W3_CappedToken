@@ -14,6 +14,8 @@ contract LootCrate is ERC1155, Pausable, AccessControl {
     uint256 private _shieldsSupply;
     uint256 public price;
 
+    event CratesOpened(address getter, uint256 count, uint256 price);
+
     constructor(string memory uri_) ERC1155(uri_) {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _nextNFTTokenId = 3;
@@ -34,63 +36,68 @@ contract LootCrate is ERC1155, Pausable, AccessControl {
     // Todo: C-3: openCrate(uint count) payable
     //    // mints random mix of IDs 1–3 based on keccak256(msg.sender, block.timestamp).
     //    // Price: 0.02 ETH each.
-    error WrongAmountWasPayed(uint256 expected, uint256 got);
-
+    error WrongAmountWasPayed(uint256 price, uint256 count, uint256 expected, uint256 got);
 
     function openCrate(uint256 count) external payable {
-        if (msg.value != price) revert WrongAmountWasPayed(price, msg.value);
+        // Every crate should have up to 100 items among which 95 would be assortment of swords and shields and the rest
+        // would be NFTs
+        uint256 expected = price * count;
+        if (msg.value != expected) revert WrongAmountWasPayed(price, count, expected, msg.value);
         bytes32 seedForSwardsInCrate = keccak256(abi.encodePacked(msg.sender, block.timestamp));
 
-        uint256 swardsInCrate = uint256(seedForSwardsInCrate) % 96; // 0–95
+        uint256 swardsInCrates = uint256(seedForSwardsInCrate) % (96 * count); // 0–95*count
         bytes32 seedForShieldsInCrate = keccak256(abi.encodePacked(seedForSwardsInCrate, uint256(1)));
-        uint256 shieldsInCrate = uint256(seedForShieldsInCrate) % (96 - swardsInCrate); // keeps sum ≤ 95
+        uint256 shieldsInCrates = uint256(seedForShieldsInCrate) % ((96 * count) - swardsInCrates); // keeps sum ≤ 95
 
         bytes32 seedForNftsInCrate = keccak256(abi.encodePacked(seedForSwardsInCrate, uint256(2)));
-        uint256 nftsInCrate = uint256(seedForNftsInCrate) % 6; // 0–5
+        uint256 nftsInCrate = uint256(seedForNftsInCrate) % (6 * count); // 0–5
 
         uint256[] memory ids;
         uint256[] memory amounts;
-        if (swardsInCrate >= _swordsSupply) {
-            swardsInCrate = _swordsSupply;
+        if (swardsInCrates >= _swordsSupply) {
+            swardsInCrates = _swordsSupply;
             _swordsSupply = 0;
         } else {
-            _swordsSupply = _swordsSupply - swardsInCrate;
+            _swordsSupply = _swordsSupply - swardsInCrates;
         }
 
-        if (shieldsInCrate >= _shieldsSupply) {
-            shieldsInCrate = _shieldsSupply;
+        if (shieldsInCrates >= _shieldsSupply) {
+            shieldsInCrates = _shieldsSupply;
             _shieldsSupply = 0;
         } else {
-            _shieldsSupply = _shieldsSupply - shieldsInCrate;
+            _shieldsSupply = _shieldsSupply - shieldsInCrates;
         }
 
-        if (swardsInCrate > 0 && shieldsInCrate > 0) {
+        if (swardsInCrates > 0 && shieldsInCrates > 0) {
             ids = new uint256[](2 + nftsInCrate);
             ids[0] = 1;
             ids[1] = 2;
             amounts = new uint256[](2 + nftsInCrate);
-            amounts[0] = swardsInCrate;
-            amounts[1] = shieldsInCrate;
-        } else if (swardsInCrate > 0) {
+            amounts[0] = swardsInCrates;
+            amounts[1] = shieldsInCrates;
+        } else if (swardsInCrates > 0) {
             ids = new uint256[](1 + nftsInCrate);
             ids[0] = 1;
             amounts = new uint256[](1 + nftsInCrate);
-            amounts[0] = swardsInCrate;
-        } else if (shieldsInCrate > 0) {
+            amounts[0] = swardsInCrates;
+        } else if (shieldsInCrates > 0) {
             ids = new uint256[](1 + nftsInCrate);
             ids[0] = 2;
             amounts = new uint256[](1 + nftsInCrate);
-            amounts[0] = shieldsInCrate;
+            amounts[0] = shieldsInCrates;
         }
+        uint256 start = ids.length - nftsInCrate;
         for (uint256 i = 1; i <= nftsInCrate; i++) {
-            ids[ids.length + i] = _nextNFTTokenId++;
-            amounts[amounts.length + i] = 1;
+            ids[start + i - 1] = _nextNFTTokenId++;
+            amounts[start + i - 1] = 1;
         }
         _mintBatch(msg.sender, ids, amounts, "");
+        emit CratesOpened(_msgSender(), count, price);
     }
 
     error IdsAndAmountsMustHaveTheSameSize();
     /**
+     * An authorised airdropper with MINTER_ROLE can mint batches straight to players without payment when needed.
      * Calls @dev xref:ROOT:erc1155.adoc#batch-operations[Batched] version of {_mint}.
      *
      * Emits a {TransferBatch} event.

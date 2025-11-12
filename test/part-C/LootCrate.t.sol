@@ -4,8 +4,36 @@ pragma solidity ^0.8.30;
 import { Test } from "forge-std/Test.sol";
 import { LootCrate } from "../../src/part-C/LootCrate.sol";
 
+// Todo: Part-C: openCrate reverts with wrong ETH, pause blocks openCrate
 contract LootCrateTest is Test {
     LootCrate public crate;
+    string public baseURI;
+    address public crateAdmin;
+    address public cratePauser;
+    address payable public crateGetter;
 
-    function setUp() public { }
+    event CratesOpened(address getter, uint256 count, uint256 price);
+
+    function setUp() public {
+        vm.txGasPrice(0); // exact balance math
+        baseURI = vm.envString("BASE_URI");
+        crateAdmin = payable(address(vm.envAddress("CRATE_ADMIN")));
+        cratePauser = payable(address(vm.envAddress("PAUSER")));
+        crateGetter = payable(address(vm.envAddress("CRATE_GETTER")));
+        vm.startPrank(crateAdmin);
+        crate = new LootCrate(baseURI);
+        crate.grantRole(crate.PAUSER_ROLE(), cratePauser);
+        vm.stopPrank();
+    }
+
+    function testOpenCrate() public {
+        uint256 count = 3;
+        uint256 payment = crate.price()*count;
+        vm.deal(crateGetter, payment);
+        vm.startPrank(crateGetter);
+        vm.expectEmit();
+        emit CratesOpened(crateGetter, count, crate.price());
+        crate.openCrate{ value: payment }(count);
+        vm.stopPrank();
+    }
 }

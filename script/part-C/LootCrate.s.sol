@@ -8,6 +8,7 @@ contract LootCrateScript is Script {
     LootCrate public crate;
 
     function setUp() public { }
+
     function run() public {
         uint256 pk;
         string memory baseURI = vm.envString("BASE_URI");
