@@ -3,9 +3,8 @@ pragma solidity ^0.8.30;
 
 import { Test } from "forge-std/Test.sol";
 import { LootCrate } from "../../src/part-C/LootCrate.sol";
-import "@openzeppelin/contracts/utils/Pausable.sol";
 
-// Todo: Part-C: openCrate reverts with wrong ETH, pause blocks openCrate
+// Part-C: openCrate reverts with wrong ETH, pause blocks openCrate
 contract LootCrateTest is Test {
     LootCrate public crate;
     string public baseURI;
@@ -13,12 +12,8 @@ contract LootCrateTest is Test {
     address public cratePauser;
     address payable public crateGetter;
 
-    event CratesOpened(address getter, uint256 count, uint256 price);
-
-    /**
- * @dev Emitted when the pause is triggered by `account`.
-     */
     event Paused(address account);
+    event Unpaused(address account);
 
     function setUp() public {
         vm.txGasPrice(0); // exact balance math
@@ -29,6 +24,33 @@ contract LootCrateTest is Test {
         vm.startPrank(crateAdmin);
         crate = new LootCrate(baseURI);
         crate.grantRole(crate.PAUSER_ROLE(), cratePauser);
+        vm.stopPrank();
+    }
+
+    function testHappyPathOpenCrate() public {
+        uint256 count = 3;
+        uint256 payment = crate.price()*count;
+        vm.deal(crateGetter, payment);
+        vm.startPrank(crateGetter);
+        vm.expectEmit();
+        emit LootCrate.CratesOpened(crateGetter, count, crate.price());
+        crate.openCrate{ value: payment }(count);
+        vm.stopPrank();
+    }
+
+    function testWrongPaymentAmountOpenCrate() public {
+        uint256 count = 3;
+        uint256 expected = crate.price()*count;
+        uint256 got = crate.price()*(count + 1);
+        vm.deal(crateGetter, got);
+        vm.startPrank(crateGetter);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                LootCrate.WrongAmountWasPayed.selector,
+                crate.price(), count, expected, got
+            )
+        );
+        crate.openCrate{value: got}(count);
         vm.stopPrank();
     }
 
@@ -44,6 +66,11 @@ contract LootCrateTest is Test {
         vm.startPrank(crateGetter);
         vm.expectRevert(bytes("EnforcedPause()"));
         crate.openCrate{ value: payment }(count);
+        vm.stopPrank();
+        vm.startPrank(cratePauser);
+        vm.expectEmit();
+        emit Unpaused(cratePauser);
+        crate.unpause();
         vm.stopPrank();
     }
 }
