@@ -32,7 +32,7 @@ _deps/
 .states/
 
 # --- Env / secrets ---
-.env
+contracts/.env
 .env.*
 !.env.example
 
@@ -42,8 +42,8 @@ _deps/
 .wake/
 .wake_cache/
 lib/
+contracts/lib/
 bin/
-.DS_Store
 
 # --- Optional / tool-specific ---
 # Ackee Tools for Solidity / Wake caches (uncomment if created in your repo)
@@ -64,3 +64,4 @@ Icon?
 .Spotlight-V100
 .Trashes
 .fseventsd
+/contracts/lib/
