@@ -8,7 +8,7 @@ import { CappedToken } from "../part-A/CappedToken.sol";
 contract TokenSale is Ownable2Step {
     CappedToken public cappedToken;
     uint256 public sellPrice;
-    uint256 public buyPrice;
+    uint256 public buyBackPrice;
     uint256 public minimumPurchase;
     uint256 public tokensInReserve;
     mapping(address => uint256) public accounts;
@@ -24,18 +24,18 @@ contract TokenSale is Ownable2Step {
     can buy tokens at 0.001 ETH each and sell them back at 0.0005 ETH per token.
      *
      */
-    constructor(address _cappedToken, address _owner, uint256 _sellPrice, uint256 _buyPrice) Ownable(_owner) {
+    constructor(address _cappedToken, address _owner, uint256 _sellPrice, uint256 _buyBackPrice) Ownable(_owner) {
         cappedToken = CappedToken(_cappedToken);
         sellPrice = _sellPrice;
-        buyPrice = _buyPrice;
+        buyBackPrice = _buyBackPrice;
     }
 
     function setSellPrice(uint256 _sellPrice) external onlyOwner {
         sellPrice = _sellPrice;
     }
 
-    function setBuyPrice(uint256 _buyPrice) external onlyOwner {
-        buyPrice = _buyPrice;
+    function setBuyBackPrice(uint256 _buyBackPrice) external onlyOwner {
+        buyBackPrice = _buyBackPrice;
     }
 
     error WithdrawFundsFailed();
@@ -56,10 +56,14 @@ contract TokenSale is Ownable2Step {
     error NotEnoughFunds();
     error PurchaseTooSmall();
 
+    event BuyMint(address indexed from, address indexed to, uint256 tokensToMint);
+
+    event BuyTransfer(address indexed from, address indexed to, uint256 tokensToTransfer);
+
     function _buy() internal {
         // calculate tokensOut
         // use contract reserves first, mint remainder if needed
-        uint256 tokensToAdd = msg.value * 10 ** cappedToken.decimals() / buyPrice;
+        uint256 tokensToAdd = msg.value * 10 ** cappedToken.decimals() / sellPrice;
         if (tokensToAdd == 0) revert PurchaseTooSmall();
         accounts[msg.sender] += tokensToAdd;
         uint256 tokensToMint;
@@ -69,7 +73,7 @@ contract TokenSale is Ownable2Step {
                 tokensInReserve -= tokensToAdd;
                 tokensToTransfer = tokensToAdd;
             }
-        } else if (tokensInReserve > 0 && tokensInReserve < tokensToAdd) {
+        } else if (tokensInReserve >= 0 && tokensInReserve < tokensToAdd) {
             unchecked {
                 tokensToMint = tokensToAdd - tokensInReserve;
                 tokensToTransfer = tokensInReserve;
@@ -79,9 +83,11 @@ contract TokenSale is Ownable2Step {
 
         if (tokensToMint > 0) {
             cappedToken.mint(msg.sender, tokensToMint);
+            emit BuyMint(address(0), msg.sender, tokensToMint);
         }
         if (tokensToTransfer > 0) {
             cappedToken.transfer(msg.sender, tokensToTransfer);
+            emit BuyTransfer(address(this), msg.sender, tokensToTransfer);
         }
     }
 

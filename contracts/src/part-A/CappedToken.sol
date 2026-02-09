@@ -12,7 +12,10 @@ contract CappedToken is ERC20, AccessControlDefaultAdminRules {
 
     // A-1.2: Constructor (name, symbol, admin) mints 100 M tokens to admin and grants MINTER_ROLE to a separate
     // VestingVault.
-    constructor(string memory name, string memory symbol, address admin, uint256 _maxTokenSupply) ERC20(name, symbol) AccessControlDefaultAdminRules (3 days, admin){
+    constructor(string memory name, string memory symbol, address admin, uint256 _maxTokenSupply)
+        ERC20(name, symbol)
+        AccessControlDefaultAdminRules(3 days, admin)
+    {
         maxSupply = _maxTokenSupply * 10 ** decimals();
     }
 
