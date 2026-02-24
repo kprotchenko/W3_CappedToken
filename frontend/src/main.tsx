@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { WagmiProvider, createConfig, http } from 'wagmi'
-import { injected } from '@wagmi/connectors'
+// import { injected } from '@wagmi/connectors'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App'
 
@@ -18,7 +18,7 @@ const anvil = {
 
 const config = createConfig({
     chains: [anvil],
-    connectors: [injected()],
+    // connectors: [injected()],
     transports: {
         [anvil.id]: http('http://127.0.0.1:8545'),
     },
