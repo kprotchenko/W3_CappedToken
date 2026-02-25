@@ -1,6 +1,7 @@
 import {formatUnits, parseEther} from "viem";
 import tokenSaleArtifact from "../../../contracts/out/TokenSale.sol/TokenSale.json";
 import {
+    useBalance,
     useConnect,
     useConnection,
     useDisconnect,
@@ -12,12 +13,23 @@ import tokenArtifact from "../../../contracts/out/CappedToken.sol/CappedToken.js
 import * as React from "react";
 const tokenAddress = import.meta.env.VITE_TOKEN as `0x${string}`
 const tokenSaleAddress = import.meta.env.VITE_TOKEN_SALE as `0x${string}`
+const ANVIL_CHAIN_ID = 31337 as const
 
 function ConnectToWallet(){
     const { address, isConnected } = useConnection()
     const { mutate, connectors } = useConnect()
     const { mutate: disconnect } = useDisconnect()
     const { isPending } = useWriteContract()
+
+    // --- ETH (native) balance ---
+    const {
+        data: ethBalance,
+        refetch: refetchEthBalance,
+    } = useBalance({
+        address,
+        chainId: ANVIL_CHAIN_ID,
+    }) // :contentReference[oaicite:3]{index=3}
+
     // 1) Read token balance + grab refetch function
     const {
         data: tokenBalance,
@@ -41,9 +53,10 @@ function ConnectToWallet(){
 
     // 4) When mined, refetch balance so UI updates
     React.useEffect(() => {
-        if (!isBuyMined) return;
-        refetchTokenBalance();
-    }, [isBuyMined, refetchTokenBalance]);
+        if (!isBuyMined) return
+        refetchTokenBalance()
+        refetchEthBalance()
+    }, [isBuyMined, refetchEthBalance, refetchTokenBalance]);
 
     const handleBuy = async (money: string) => {
         try {
@@ -52,7 +65,7 @@ function ConnectToWallet(){
                 abi: tokenSaleArtifact.abi,
                 functionName: "buy",
                 value: parseEther(money),
-                chainId: 31337,
+                chainId: ANVIL_CHAIN_ID,
             });
         } catch (e) {
             console.error("buy failed", e);
@@ -65,7 +78,7 @@ function ConnectToWallet(){
     //             abi: tokenSaleArtifact.abi,
     //             functionName: 'buy',
     //             value: parseEther(money),
-    //             chainId: 31337,
+    //             chainId: ANVIL_CHAIN_ID,
     //         })
     //     } catch (e) {
     //         console.error('buy failed', e)
@@ -94,11 +107,16 @@ function ConnectToWallet(){
                         <button onClick={() => handleBuy('0.005')} disabled={isPending}>
                             {isPending ? 'Buying…' : 'Buy 5 CT (0.001 ETH each)'}
                         </button>
-
-                        <p>
+                        <div>
+                            ETH balance:{' '}
+                            {ethBalance
+                                ? `${formatUnits(ethBalance.value, ethBalance.decimals)} ${ethBalance.symbol}`
+                                : '—'}
+                        </div>
+                        <div>
                             Token balance:{" "}
                             {tokenBalance ? formatUnits(tokenBalance as bigint, 18) : '0'}
-                        </p>
+                        </div>
                     </>
 
                 )}
