@@ -1,4 +1,4 @@
-import {formatUnits, parseEther} from "viem";
+import {formatUnits, parseEther, getAddress} from "viem";
 import tokenSaleArtifact from "../../../contracts/out/TokenSale.sol/TokenSale.json";
 import {
     useBalance,
@@ -48,7 +48,7 @@ function ConnectToWallet(){
     // 3) Wait for the buy tx to be mined
     const { isSuccess: isBuyMined } = useWaitForTransactionReceipt({
         hash: buyTx.data, // wagmi sets this to the tx hash after mutate/mutateAsync
-        chainId: 31337,
+        chainId: ANVIL_CHAIN_ID,
     });
 
     // 4) When mined, refetch balance so UI updates
@@ -71,25 +71,43 @@ function ConnectToWallet(){
             console.error("buy failed", e);
         }
     };
-    // const handleBuy = async (money: string) => {
-    //     try {
-    //         await mutateAsync({
-    //             address: tokenSaleAddress,
-    //             abi: tokenSaleArtifact.abi,
-    //             functionName: 'buy',
-    //             value: parseEther(money),
-    //             chainId: ANVIL_CHAIN_ID,
-    //         })
-    //     } catch (e) {
-    //         console.error('buy failed', e)
-    //     }
-    // }
-    // const { data: tokenBalance } = useReadContract ({
-    //     address: tokenAddress,
-    //     abi: tokenArtifact.abi,
-    //     functionName: 'balanceOf',
-    //     args: address ? [address] : undefined,
-    // })
+
+    // ...
+    const { data: saleOwner } = useReadContract({
+        address: tokenSaleAddress,
+        abi: tokenSaleArtifact.abi,
+        functionName: 'owner',
+        chainId: ANVIL_CHAIN_ID,
+        query: { enabled: Boolean(address) },
+    })
+
+    const isOwner =
+        Boolean(address && saleOwner) &&
+        getAddress(address!) === getAddress(saleOwner as `0x${string}`)
+    const handleWithdrawFunds = async () => {
+        try {
+            await buyTx.mutateAsync({
+                address: tokenSaleAddress,
+                abi: tokenSaleArtifact.abi,
+                functionName: "withdrawFunds",
+                chainId: ANVIL_CHAIN_ID,
+            });
+        } catch (e) {
+            console.error("withdrawFunds failed", e);
+        }
+    }
+    const handleWithdrawTokens = async () => {
+        try {
+            await buyTx.mutateAsync({
+                address: tokenSaleAddress,
+                abi: tokenSaleArtifact.abi,
+                functionName: "withdrawTokens",
+                chainId: ANVIL_CHAIN_ID,
+            });
+        } catch (e) {
+            console.error("withdrawTokens failed", e);
+        }
+    }
     return (
         <>
             <div>
@@ -117,6 +135,17 @@ function ConnectToWallet(){
                             Token balance:{" "}
                             {tokenBalance ? formatUnits(tokenBalance as bigint, 18) : '0'}
                         </div>
+                        {isOwner ? (
+                            <section>
+                                <h3>Owner actions</h3>
+                                <button onClick={handleWithdrawFunds}>Withdraw ETH</button>
+                                <button onClick={handleWithdrawTokens}>Withdraw tokens</button>
+                            </section>
+                        ) : (
+                            <div style={{ opacity: 0.7 }}>
+                                Connected account is not the owner (owner: {String(saleOwner ?? '—')}).
+                            </div>
+                        )}
                     </>
 
                 )}
