@@ -333,7 +333,6 @@ function ConnectToWallet(){
                             </span>
                         </section>
                         <div>
-                            <div>title: {sellTknAmountAdj === null || sellTknAmountAdj === 0n || allowance === 0n || allowance < sellTknAmountAdj ? "Approval required before selling" : ""}</div>
                             <div>sellTknAmount : {sellTknAmountAdj}</div>
                             <div>Allowance : {allowance}</div>
                         </div>
