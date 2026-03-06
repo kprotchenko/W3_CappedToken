@@ -23,16 +23,22 @@ contract CappedTokenAndTokenSale is Script {
             tokenSaleOwner = vm.envAddress("TOKEN_SALE_OWNER");
         } else if (block.chainid == 11_155_111) {
             // Todo: need to finish deployment to sepolia network
-            // pk = uint256(vm.envBytes32("PK_FOR_SEPOLIA"));
-            // community = payable(vm.envAddress("COMMUNITY"));
-            revert("unsupported sepolia chain");
+            pk = uint256(vm.envBytes32("PK_FOR_SEPOLIA"));
+            tpk = uint256(vm.envBytes32("PK_FOR_SEPOLIA_TOKEN_ADMIN"));
+            tokenAdmin = vm.envAddress("ADDR_FOR_SEPOLIA_TOKEN_ADMIN");
+            tokenSaleOwner = vm.envAddress("ADDR_FOR_SEPOLIA_TOKEN_SALE");
         } else {
             revert("unsupported chain");
         }
         vm.startBroadcast(pk);
         token = new CappedToken("CappedToken", "CT", tokenAdmin, 10_000);
-        tokenSale = new TokenSale(address(token), tokenSaleOwner, 0.001 ether, 0.0005 ether);
+        tokenSale = new TokenSale(address(token), tokenSaleOwner, 0.00001 ether, 0.000005 ether);
         vm.stopBroadcast();
+        // Print deployed addresses into your terminal output
+        console2.log("CappedToken:", address(token));
+        console2.log("TokenSale:", address(tokenSale));
+
+        // Grant MINTER_ROLE to TokenSale as TOKEN_ADMIN
         vm.startBroadcast(tpk);
         token.grantRole(token.MINTER_ROLE(), address(tokenSale));
         vm.stopBroadcast();

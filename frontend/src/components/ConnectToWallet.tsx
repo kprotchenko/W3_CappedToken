@@ -13,7 +13,7 @@ import tokenArtifact from "../../../contracts/out/CappedToken.sol/CappedToken.js
 import * as React from "react";
 const tokenAddress = import.meta.env.VITE_TOKEN as `0x${string}`
 const tokenSaleAddress = import.meta.env.VITE_TOKEN_SALE as `0x${string}`
-const CHAIN_ID = 31337 as const
+const {number: CHAIN_ID} = import.meta.env.VITE_CHAIN_ID
 
 function ConnectToWallet(){
     const { address, isConnected } = useConnection()
@@ -264,11 +264,18 @@ function ConnectToWallet(){
     return (
         <>
             <div>
+                <section style={{ marginTop: 16 }}>
+                    <h1>Capped Token Sale ()</h1>
+                    The app needs MetaMask Wallet connected through the plugin.
+                    Currently it only works on Sepolia network.
+                </section>
                 {!isConnected ? (
                     connectors.map((c) => (
-                        <button key={c.id} onClick={() => mutate({ connector: c })}>
-                            Connect ({c.name?c.name:'unknown'}:{c.id?c.id:'unknown'})
-                        </button>
+                        <section style={{ marginTop: 16 }}>
+                            <button key={c.id} onClick={() => mutate({ connector: c })} className="btn btn-primary">
+                                Connect ({c.name?c.name:'unknown'}:{c.id?c.id:'unknown'})
+                            </button>
+                        </section>
                     ))
                 ) : (
                     <>
