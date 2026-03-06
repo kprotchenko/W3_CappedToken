@@ -34,9 +34,6 @@ contract CappedTokenAndTokenSale is Script {
         token = new CappedToken("CappedToken", "CT", tokenAdmin, 10_000);
         tokenSale = new TokenSale(address(token), tokenSaleOwner, 0.00001 ether, 0.000005 ether);
         vm.stopBroadcast();
-        // Print deployed addresses into your terminal output
-        console2.log("CappedToken:", address(token));
-        console2.log("TokenSale:", address(tokenSale));
 
         // Grant MINTER_ROLE to TokenSale as TOKEN_ADMIN
         vm.startBroadcast(tpk);
