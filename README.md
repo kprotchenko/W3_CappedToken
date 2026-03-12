@@ -1,7 +1,4 @@
-# solidity-sol71-Kyrylo
-# [Module 5](https://app.metana.io/lessons/%f0%9f%93%91-assignments-m4-5/)
-
-##  Part A – ERC20 TokenSale 🏦
+##  Part A – ERC20 CappedToken 📦
 - FE-1: Create an ERC20 token contract using OpenZeppelin libraries, with a name, symbol, and number of decimals of your choice. The constructor should accept a parameter to initialize the MAX_SUPPLY.
 - FE-2: Implement the supply cap for the ERC20 token contract by overriding the _update() function.
 - FE-3: An account with the MINTER_ROLE should have the ability to mint tokens. You can use the AccessControlDefaultAdminRules library from OpenZeppelin to implement this.
