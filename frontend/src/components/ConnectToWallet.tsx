@@ -1,5 +1,4 @@
 import {formatUnits, parseEther, getAddress, parseUnits} from "viem";
-import tokenSaleArtifact from "../../../contracts/out/TokenSale.sol/TokenSale.json";
 import {
     useBalance,
     useConnect,
@@ -9,7 +8,8 @@ import {
     useWaitForTransactionReceipt,
     useWriteContract
 } from "wagmi";
-import tokenArtifact from "../../../contracts/out/CappedToken.sol/CappedToken.json";
+import tokenArtifact from "../abi/CappedToken.json";
+import tokenSaleArtifact from "../abi/TokenSale.json";
 import * as React from "react";
 const tokenAddress = import.meta.env.VITE_TOKEN as `0x${string}`
 const tokenSaleAddress = import.meta.env.VITE_TOKEN_SALE as `0x${string}`
