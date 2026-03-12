@@ -3,14 +3,16 @@ frontend:
   phases:
     preBuild:
       commands:
+        - cd frontend
         - npm ci
     build:
       commands:
+        - cd frontend
         - npm run build
   artifacts:
-    baseDirectory: dist      # Vite outputs to ./dist
+    baseDirectory: frontend/dist   # Vite writes production files here
     files:
       - '**/*'
   cache:
     paths:
-      - node_modules/**/*
+      - frontend/node_modules/**/*
