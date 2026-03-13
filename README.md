@@ -1,3 +1,6 @@
+# DApp that interacts with Token Sale Contract Suite
+- ### [Single page app with access to contract deployed to Sepolia Testnet](https://main.ddbjhvieq8pws.amplifyapp.com/)
+
 ##  Part A – ERC20 CappedToken 📦
 - FE-1: Create an ERC20 token contract using OpenZeppelin libraries, with a name, symbol, and number of decimals of your choice. The constructor should accept a parameter to initialize the MAX_SUPPLY.
 - FE-2: Implement the supply cap for the ERC20 token contract by overriding the _update() function.
